@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Matematika Rasio Kota Palu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins & Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        palu: {
+                            gold: '#F59E0B',
+                            teal: '#0D9488',
+                            blue: '#0284C7',
+                            coral: '#F43F5E',
+                            purple: '#8B5CF6',
+                            dark: '#0F172A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #fef3c7 100%);
+            min-height: 100vh;
+        }
+
+        /* 3D Flip Card Effect */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Drag & Drop Visual Effects */
+        .dragging {
+            opacity: 0.5;
+            scale: 0.95;
+        }
+        .drag-over {
+            border-color: #0284C7 !important;
+            background-color: #e0f2fe !important;
+            scale: 1.02;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Printable Layout Styles */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .print-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-teal-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-palu-blue to-palu-teal flex items-center justify-center text-white shadow-md shadow-teal-500/20 font-black text-xl">
+                    <i class="fa-solid fa-shapes"></i>
+                </div>
+                <div>
+                    <h1 class="font-heading font-extrabold text-slate-800 text-lg leading-tight">Matematika Rasio</h1>
+                    <p class="text-xs font-semibold text-palu-teal flex items-center gap-1">
+                        <i class="fa-solid fa-location-dot text-rose-500"></i> Jelajah Kota Palu_By:NVNMayui
+                    </p>
+                </div>
+            </div>
+
+            <!-- Group Info Badge & Sound Controls -->
+            <div class="flex items-center gap-3">
+                <div id="navGroupBadge" class="hidden sm:flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 transition">
+                    <i class="fa-solid fa-users text-palu-blue"></i>
+                    <span id="navGroupName">Kelompok: -</span>
+                    <span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-[10px]" id="navMemberCount">0 Anggota</span>
+                </div>
+
+                <button id="audioToggleBtn" onclick="toggleAudio()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition border border-slate-200" title="Matikan/Hidupkan Suara">
+                    <i id="audioIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <button id="navReportBtn" onclick="showReportModal()" class="hidden bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-award"></i>
+                    <span>Laporan</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================= PAGE 1: GROUP LOGIN / PENDAFTARAN ================= -->
+        <section id="pageLogin" class="max-w-2xl mx-auto my-8">
+            <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-100 relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-palu-blue/10 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-palu-gold/10 rounded-full blur-2xl"></div>
+
+                <div class="text-center mb-8 relative z-10">
+                    <span class="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
+                        Media Pembelajaran HOTS SD
+                    </span>
+                    <h2 class="font-heading text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+                        Petualangan Rasio <span class="text-transparent bg-clip-text bg-gradient-to-r from-palu-teal to-palu-blue">Kota Palu</span>
+                    </h2>
+                    <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                        Selesaikan tantangan puzzle rasio & pecahkan kasus matematika HOTS bersama kelompokmu!
+                    </p>
+                </div>
+
+                <form id="groupLoginForm" onsubmit="handleStartAdventure(event)" class="space-y-6 relative z-10">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-flag text-palu-teal mr-1"></i> Nama Kelompok
+                        </label>
+                        <input type="text" id="inputGroupName" required placeholder="Contoh: Tim Maleo Pintar" 
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-palu-teal focus:border-palu-teal outline-none transition font-semibold text-slate-800">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                <i class="fa-solid fa-user-group text-palu-blue mr-1"></i> Anggota Kelompok (Min. 2)
+                            </label>
+                            <span class="text-xs text-slate-500 font-semibold">Maksimal 6 Siswa</span>
+                        </div>
+                        
+                        <div id="memberInputsContainer" class="space-y-2.5">
+                            <div class="flex items-center gap-2">
+                                <input type="text" class="member-input w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-palu-teal outline-none text-sm font-medium" placeholder="Nama Anggota 1" required>
+                                <span class="text-slate-300 text-xs w-6 text-center">#1</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" class="member-input w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-palu-teal outline-none text-sm font-medium" placeholder="Nama Anggota 2" required>
+                                <span class="text-slate-300 text-xs w-6 text-center">#2</span>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="addMemberInput()" class="mt-3 text-xs font-bold text-palu-teal hover:text-teal-700 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-circle-plus text-sm"></i> Tambah Anggota Kelompok
+                        </button>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-palu-teal to-palu-blue hover:from-teal-600 hover:to-blue-600 text-white font-heading font-bold text-lg rounded-2xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 active:scale-[0.99] transition duration-200 flex items-center justify-center gap-2">
+                        <span>Mulai Petualangan</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 2: LEVEL MENU ================= -->
+        <section id="pageLevelSelect" class="hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div>
+                    <h2 class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-800">
+                        Pilih Destinasi Pembelajaran
+                    </h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Pilih salah satu ikon Kota Palu di bawah untuk memulai tantangan rasio hari ini.
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+                    <div class="text-center px-3 border-r border-slate-200">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Kemajuan</span>
+                        <span id="overallProgressText" class="font-heading font-extrabold text-lg text-palu-teal">0 / 6</span>
+                    </div>
+                    <div class="text-center px-3">
+                        <span class="block text-xs font-bold text-slate-400 uppercase">Bintang</span>
+                        <span id="overallStarsText" class="font-heading font-extrabold text-lg text-amber-500 flex items-center gap-1">
+                            0 <i class="fa-solid fa-star text-sm"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="levelGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 3: GAMEPLAY PER LEVEL ================= -->
+        <section id="pageGameplay" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <button onclick="goToLevelSelect()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-chevron-left"></i> Kembali ke Menu Level
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <span id="gameLevelBadge" class="bg-teal-100 text-teal-800 text-xs font-extrabold px-3 py-1.5 rounded-full border border-teal-200">
+                        Level 1
+                    </span>
+                    <span id="gameStageIndicator" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                        Fase 1: Puzzle Kerja Sama
+                    </span>
+                </div>
+            </div>
+
+            <!-- FLIP CARD CONTAINER -->
+            <div class="perspective-1000 w-full min-h-[600px] mb-12">
+                <div id="cardFlipper" class="transform-style-3d relative w-full h-full min-h-[600px] bg-transparent">
+
+                    <!-- FRONT SIDE: FASE 1 - PUZZLE -->
+                    <div class="backface-hidden w-full bg-white rounded-3xl p-5 sm:p-8 shadow-xl border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+                                <div>
+                                    <h3 id="puzzleLandmarkTitle" class="font-heading text-xl sm:text-2xl font-extrabold text-slate-800">
+                                        Landmark Palu
+                                    </h3>
+                                    <p id="puzzleTopicSubtitle" class="text-xs sm:text-sm font-bold text-palu-teal">
+                                        Topik Rasio
+                                    </p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+                                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                                    <span>Cocokkan soal rasio di papan dengan potongan jawaban yang tepat!</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                <div class="lg:col-span-7 flex flex-col items-center">
+                                    <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-puzzle-piece text-palu-blue"></i> Papan Puzzle Landmark
+                                    </div>
+                                    
+                                    <div id="puzzleBoard" class="w-full max-w-md aspect-[4/3] grid grid-cols-2 grid-rows-2 gap-2 bg-slate-100 p-2 rounded-2xl border-2 border-dashed border-slate-300 relative overflow-hidden shadow-inner">
+                                        <!-- 4 Slots generated via JS -->
+                                    </div>
+
+                                    <p id="puzzleInstructionText" class="text-xs text-slate-400 mt-2 text-center">
+                                        Petunjuk: Drag & drop atau Klik slot soal lalu klik potongan jawaban yang sesuai.
+                                    </p>
+                                </div>
+
+                                <div class="lg:col-span-5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                    <div class="text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-3 flex items-center justify-between">
+                                        <span><i class="fa-solid fa-box-open text-palu-gold"></i> Potongan Jawaban</span>
+                                        <span id="remainingPiecesText" class="text-[11px] bg-slate-200 px-2 py-0.5 rounded-full font-bold">4 Tersisa</span>
+                                    </div>
+
+                                    <div id="piecesTray" class="grid grid-cols-2 gap-3 min-h-[220px]">
+                                        <!-- Pieces dynamically injected -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 font-medium italic">
+                                *Selesaikan puzzle untuk membuka Soal Cerita HOTS di balik kartu.
+                            </span>
+                            <button id="finishPuzzleBtn" disabled onclick="handlePuzzleSuccess()" class="bg-slate-300 text-slate-500 cursor-not-allowed font-heading font-bold px-6 py-3 rounded-2xl transition duration-200 flex items-center gap-2 shadow-sm">
+                                <span>Balik Kartu (HOTS)</span>
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- BACK SIDE: FASE 2 - SOAL HOTS & DISKUSI LKPD -->
+                    <div class="backface-hidden rotate-y-180 absolute top-0 left-0 w-full min-h-full bg-white rounded-3xl p-5 sm:p-8 shadow-xl border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-rose-500/20">
+                                        <i class="fa-solid fa-brain"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-heading text-lg sm:text-2xl font-extrabold text-slate-800">
+                                            Diskusi HOTS & Problem Solving
+                                        </h3>
+                                        <p id="hotsLandmarkSubtitle" class="text-xs text-slate-500 font-semibold">
+                                            Studi Kasus Kontekstual Kota Palu
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="bg-amber-100 text-amber-800 font-extrabold text-xs px-3 py-1.5 rounded-full border border-amber-200 flex items-center gap-1">
+                                    <i class="fa-solid fa-users font-bold"></i> Diskusi Kelompok
+                                </span>
+                            </div>
+
+                            <div class="mb-6 bg-slate-900 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden flex flex-col sm:flex-row items-center gap-5 shadow-lg">
+                                <div id="hotsLandmarkSvgPreview" class="w-32 h-24 bg-slate-800 rounded-xl overflow-hidden flex-shrink-0 border border-slate-700 shadow-md">
+                                    <!-- Mini SVG Illustration injected here -->
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-[10px] font-extrabold uppercase bg-palu-teal text-white px-2.5 py-0.5 rounded-full tracking-wider">
+                                        Soal Cerita HOTS
+                                    </span>
+                                    <div id="hotsStoryText" class="text-sm sm:text-base font-medium mt-2 text-slate-100 leading-relaxed">
+                                        <!-- HOTS Question text -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-5 sm:p-6 text-amber-900 flex flex-col sm:flex-row items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-2xl shrink-0 shadow-md shadow-amber-500/20">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div class="space-y-1 text-center sm:text-left">
+                                    <h4 class="font-heading font-extrabold text-base text-amber-950">
+                                        Tuliskan Jawaban & Alasan di LKPD Kelompok!
+                                    </h4>
+                                    <p class="text-xs sm:text-sm font-medium text-amber-800 leading-relaxed">
+                                        Diskusikan permasalahan rasio di atas bersama teman kelompokmu. Tuliskan langkah pengerjaan, hasil analisis, dan kesimpulan akhir pada <strong>Lembar Kerja Peserta Didik (LKPD)</strong> fisik yang telah dibagikan oleh guru, kemudian bersiaplah untuk mempresentasikannya!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <button onclick="flipBackToPuzzle()" class="w-full sm:w-auto text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2 py-2 px-4 rounded-xl hover:bg-slate-100 transition">
+                                    <i class="fa-solid fa-rotate-right"></i> Lihat Gambar / Puzzle Lagi
+                                </button>
+                                
+                                <button onclick="markLevelCompleteAndReturn()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-heading font-bold text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition duration-200 flex items-center justify-center gap-2 active:scale-95">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>Selesai Diskusi & Ke Menu Level</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= REPORT MODAL (PRINTABLE REPORT) ================= -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto no-print">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8 max-h-[90vh] overflow-y-auto relative">
+            <button onclick="hideReportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-xl w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div id="printableReportContent" class="space-y-6">
+                <div class="text-center border-b border-slate-200 pb-6">
+                    <div class="inline-flex items-center gap-2 text-palu-teal font-extrabold text-xs uppercase tracking-wider mb-1">
+                        <i class="fa-solid fa-graduation-cap"></i> Panduan Diskusi & Lembar Hasil Pembelajaran
+                    </div>
+                    <h2 class="font-heading text-2xl sm:text-3xl font-black text-slate-800">
+                        Petualangan Matematika Rasio Kota Palu
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Media Pembelajaran Kelompok Berbasis Problem Solving & HOTS
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
+                    <div>
+                        <span class="text-slate-400 font-bold block uppercase">Nama Kelompok</span>
+                        <span id="reportGroupName" class="font-heading font-extrabold text-slate-800 text-base">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 font-bold block uppercase">Anggota Kelompok</span>
+                        <span id="reportGroupMembers" class="font-semibold text-slate-700">-</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-teal-50 border border-teal-200 p-3 rounded-xl">
+                        <span class="block text-[10px] font-bold text-teal-600 uppercase">Level Diselesaikan</span>
+                        <span id="reportCompletedLevels" class="font-heading font-black text-xl text-teal-800">0 / 6</span>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl">
+                        <span class="block text-[10px] font-bold text-blue-600 uppercase">Status Diskusi</span>
+                        <span id="reportStatus" class="font-heading font-bold text-xs text-blue-800 mt-1 block">Aktif</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-heading font-extrabold text-slate-800 text-base mb-3 border-b border-slate-100 pb-2">
+                        Daftar Soal HOTS & Landmark Kota Palu
+                    </h3>
+                    <div id="reportLevelDetails" class="space-y-4">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-slate-100 flex justify-end gap-3 no-print">
+                <button onclick="hideReportModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-xs text-slate-600 hover:bg-slate-100">
+                    Tutup
+                </button>
+                <button onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-palu-teal hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak Panduan / Ringkasan LKPD</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        /* ================= STATE & AUDIO MANAGEMENT ================= */
+        const gameState = {
+            groupName: '',
+            members: [],
+            currentLevelId: null,
+            audioMuted: false,
+            levelsProgress: {
+                1: { completed: false, puzzleSolved: false },
+                2: { completed: false, puzzleSolved: false },
+                3: { completed: false, puzzleSolved: false },
+                4: { completed: false, puzzleSolved: false },
+                5: { completed: false, puzzleSolved: false },
+                6: { completed: false, puzzleSolved: false }
+            }
+        };
+
+        let currentSlotAnswers = {};
+        let selectedPieceId = null;
+
+        // Web Audio Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (gameState.audioMuted) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'flip') {
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'win') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        function toggleAudio() {
+            gameState.audioMuted = !gameState.audioMuted;
+            const icon = document.getElementById('audioIcon');
+            icon.className = gameState.audioMuted ? "fa-solid fa-volume-xmark text-rose-500" : "fa-solid fa-volume-high text-teal-600";
+        }
+
+        /* ================= LANDMARK SVG ILLUSTRATIONS ================= */
+        const landmarkSvgs = {
+            vatulemo: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#0284C7"/><path d="M0 200 Q200 160 400 200 L400 300 L0 300 Z" fill="#15803D"/><circle cx="320" cy="70" r="35" fill="#FDE047"/><rect x="180" y="110" width="40" height="90" fill="#94A3B8"/><path d="M170 110 L200 70 L230 110 Z" fill="#DC2626"/><rect x="120" y="160" width="160" height="10" fill="#CBD5E1"/><rect x="195" y="130" width="10" height="20" fill="#FEF08A"/><circle cx="80" cy="220" r="25" fill="#22C55E"/><circle cx="320" cy="230" r="30" fill="#16A34A"/></svg>`,
+            tuguNol: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#0F172A"/><circle cx="200" cy="220" r="120" fill="#1E293B" stroke="#0D9488" stroke-width="4"/><rect x="190" y="60" width="20" height="150" fill="#E2E8F0"/><polygon points="200,30 180,60 220,60" fill="#F59E0B"/><circle cx="200" cy="30" r="8" fill="#FEF08A"/><path d="M120 220 A80 80 0 0 1 280 220" fill="none" stroke="#38BDF8" stroke-width="6"/><circle cx="100" cy="180" r="15" fill="#F43F5E"/><circle cx="300" cy="180" r="15" fill="#F43F5E"/></svg>`,
+            lalove: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#38BDF8"/><path d="M0 220 Q200 180 400 220 L400 300 L0 300 Z" fill="#0284C7"/><path d="M50 200 Q200 100 350 200" fill="none" stroke="#E11D48" stroke-width="14"/><rect x="40" y="190" width="320" height="12" fill="#475569"/><line x1="120" y1="160" x2="120" y2="200" stroke="#FFF" stroke-width="3"/><line x1="200" y1="130" x2="200" y2="200" stroke="#FFF" stroke-width="3"/><line x1="280" y1="160" x2="280" y2="200" stroke="#FFF" stroke-width="3"/></svg>`,
+            untad: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#F0FDF4"/><rect x="100" y="130" width="200" height="110" fill="#0D9488" rx="8"/><polygon points="200,60 80,130 320,130" fill="#0F766E"/><rect x="175" y="170" width="50" height="70" fill="#CCFBF1"/><circle cx="200" cy="100" r="18" fill="#F59E0B"/><rect x="120" y="150" width="30" height="30" fill="#FFF" rx="4"/><rect x="250" y="150" width="30" height="30" fill="#FFF" rx="4"/></svg>`,
+            nelayan: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#0284C7"/><path d="M0 170 Q200 140 400 170 L400 300 L0 300 Z" fill="#0369A1"/><path d="M100 210 Q140 190 180 210 L170 225 L110 225 Z" fill="#78350F"/><polygon points="140,210 140,150 170,180" fill="#F8FAFC"/><circle cx="330" cy="80" r="30" fill="#F97316"/></svg>`,
+            telukPalu: `<svg viewBox="0 0 400 300" class="w-full h-full object-cover"><rect width="400" height="300" fill="#0284C7"/><path d="M0 120 Q120 90 200 140 T400 110 L400 300 L0 300 Z" fill="#15803D"/><path d="M0 200 C150 170 250 230 400 190 L400 300 L0 300 Z" fill="#0284C7"/><path d="M180 190 Q200 120 220 190 Z" fill="#E11D48"/><circle cx="70" cy="70" r="25" fill="#FDE047"/></svg>`
+        };
+
+        /* ================= LEVEL DATA ================= */
+        const levelsData = [
+            {
+                id: 1,
+                landmark: 'Lapangan Vatulemo Palu',
+                title: 'Penyederhanaan Rasio',
+                svgKey: 'vatulemo',
+                puzzleSlots: [
+                    { id: 0, question: 'Sederhanakan 15 : 25', answer: '3 : 5' },
+                    { id: 1, question: 'Sederhanakan 12 : 18', answer: '2 : 3' },
+                    { id: 2, question: 'Sederhanakan 20 : 30', answer: '2 : 3' },
+                    { id: 3, question: 'Sederhanakan 8 : 24', answer: '1 : 3' }
+                ],
+                hots: {
+                    story: '“Ibu guru ingin membagikan bendera kecil kepada kelompok siswa di Lapangan Vatulemo. Kelompok Melati mendapat 15 bendera merah dan 25 bendera putih. Sebelum dibagikan, ketua kelompok diminta menyederhanakan rasio jumlah bendera merah terhadap bendera putih. Jika setiap kantong kecil harus berisi jumlah bendera merah dan putih dengan perbandingan paling sederhana yang sama, berapa banyak bendera merah dan putih dalam satu kantong kecil tersebut? Jelaskan cara kelompokmu menemukannya!”'
+                }
+            },
+            {
+                id: 2,
+                landmark: 'Tugu Nol Kilometer Palu',
+                title: 'Rasio Senilai',
+                svgKey: 'tuguNol',
+                puzzleSlots: [
+                    { id: 0, question: '2 cm tinggi = 6 sendok. 5 cm tinggi = ?', answer: '15 Sendok' },
+                    { id: 1, question: '1 cm tinggi butuh ? sendok air', answer: '3 Sendok' },
+                    { id: 2, question: 'Jika tinggi 4 cm, butuh air ?', answer: '12 Sendok' },
+                    { id: 3, question: 'Rasio cm terhadap sendok air', answer: '1 : 3' }
+                ],
+                hots: {
+                    story: '“Budi dan teman-teman kelompoknya membuat model Tugu Nol Kilometer Palu dari tanah liat. Untuk membuat 2 cm tinggi model tugu, mereka membutuhkan 6 sendok air. Jika mereka ingin membuat model tugu setinggi 5 cm, berapa banyak sendok air yang harus mereka campurkan? Diskusikan dengan kelompokmu, apakah jika tingginya ditambah menjadi dua kali lipat, jumlah airnya juga harus dikalikan dua? Mengapa?”'
+                }
+            },
+            {
+                id: 3,
+                landmark: 'Jembatan Lalove',
+                title: 'Rasio Satuan',
+                svgKey: 'lalove',
+                puzzleSlots: [
+                    { id: 0, question: 'Andi: 6 km dalam 30 mnt. Jarak per menit = ?', answer: '0,2 km/mnt' },
+                    { id: 1, question: 'Beni: 4 km dalam 20 mnt. Jarak per menit = ?', answer: '0,2 km/mnt' },
+                    { id: 2, question: 'Waktu Andi berlari 1 km = ?', answer: '5 Menit' },
+                    { id: 3, question: 'Waktu Beni berlari 1 km = ?', answer: '5 Menit' }
+                ],
+                hots: {
+                    story: '“Dua orang anak, Andi dan Beni, berlari pagi di sekitar Jembatan Lalove. Andi mampu berlari sejauh 6 km dalam waktu 30 menit. Sedangkan Beni mampu berlari sejauh 4 km dalam waktu 20 menit. Siapakah anak yang berlari lebih cepat (memiliki jarak tempuh terbanyak dalam 1 menit)? Coba buktikan dengan menghitung rasio satuan (jarak per 1 menit) dari masing-masing anak!”'
+                }
+            },
+            {
+                id: 4,
+                landmark: 'Universitas Tadulako (UNTAD)',
+                title: 'Rasio Bagian & Keseluruhan',
+                svgKey: 'untad',
+                puzzleSlots: [
+                    { id: 0, question: 'Total 30 kupu-kupu. Kuning:Biru = 2:3. Kupu Biru = ?', answer: '18 Ekor' },
+                    { id: 1, question: 'Jumlah Kupu-kupu Kuning awal = ?', answer: '12 Ekor' },
+                    { id: 2, question: 'Tambah 5 kupu biru, total kupu-kupu = ?', answer: '35 Ekor' },
+                    { id: 3, question: 'Rasio baru Kuning : Total Keseluruhan', answer: '12 : 35' }
+                ],
+                hots: {
+                    story: '“Di taman dekat Universitas Tadulako, terdapat total 30 ekor kupu-kupu. Perbandingan jumlah kupu-kupu berwarna kuning dan kupu-kupu berwarna biru adalah 2 : 3. Berapa jumlah kupu-kupu biru di taman tersebut? Jika tiba-tiba datang lagi 5 ekor kupu-kupu biru yang bergabung, berapakah rasio jumlah kupu-kupu kuning terhadap keseluruhan kupu-kupu sekarang?”'
+                }
+            },
+            {
+                id: 5,
+                landmark: 'Kampung Nelayan Palu',
+                title: 'Rasio Durasi Waktu',
+                svgKey: 'nelayan',
+                puzzleSlots: [
+                    { id: 0, question: 'Pak Hasan: 2 jam = ? menit', answer: '120 Menit' },
+                    { id: 1, question: 'Pak Rudi: 90 menit = ? jam', answer: '1,5 Jam' },
+                    { id: 2, question: 'Rasio sederhana 120 mnt : 90 mnt = ?', answer: '4 : 3' },
+                    { id: 3, question: 'Siapa persiapan lebih singkat?', answer: 'Pak Rudi' }
+                ],
+                hots: {
+                    story: '“Pak Hasan dan Pak Rudi adalah nelayan di Kampung Nelayan Palu. Pak Hasan bersiap melaut selama 2 jam, sedangkan Pak Rudi bersiap melaut selama 90 menit. Nyatakan perbandingan (rasio) durasi waktu persiapan Pak Hasan terhadap Pak Rudi dalam bentuk paling sederhana! Menurut kelompokmu, nelayan manakah yang persiapan waktunya lebih singkat?”'
+                }
+            },
+            {
+                id: 6,
+                landmark: 'Pemandangan Kota Palu',
+                title: 'Evaluasi Integrasi Materi',
+                svgKey: 'telukPalu',
+                puzzleSlots: [
+                    { id: 0, question: 'Rasio sederhana 40 Mangga : 60 Pisang', answer: '2 : 3' },
+                    { id: 1, question: 'Maksimal keranjang (FPB 40 & 60)', answer: '20 Keranjang' },
+                    { id: 2, question: 'Isi Mangga per keranjang', answer: '2 Buah' },
+                    { id: 3, question: 'Isi Pisang per keranjang', answer: '3 Buah' }
+                ],
+                hots: {
+                    story: '“Dalam rangka perayaan hari ulang tahun Kota Palu, kelompokmu bertugas membagikan paket buah mangga dan pisang. Kalian memiliki total 40 buah mangga dan 60 buah pisang. (1) Berapakah rasio sederhana dari buah mangga terhadap buah pisang? (2) Jika buah tersebut ingin dimasukkan ke dalam beberapa keranjang dengan isi jenis dan jumlah yang sama rata tanpa tersisa, berapakah jumlah maksimal keranjang yang bisa dibuat? (3) Berapa isi buah mangga dan pisang di setiap keranjang tersebut? Diskusikan bersama kelompokmu!”'
+                }
+            }
+        ];
+
+        /* ================= EVENT HANDLERS & FLOW ================= */
+        function addMemberInput() {
+            playSound('click');
+            const container = document.getElementById('memberInputsContainer');
+            const currentCount = container.children.length;
+            if (currentCount >= 6) {
+                alert('Maksimal 6 anggota kelompok!');
+                return;
+            }
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2";
+            div.innerHTML = `
+                <input type="text" class="member-input w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-palu-teal outline-none text-sm font-medium" placeholder="Nama Anggota ${currentCount + 1}" required>
+                <span class="text-slate-300 text-xs w-6 text-center">#${currentCount + 1}</span>
+            `;
+            container.appendChild(div);
+        }
+
+        function handleStartAdventure(e) {
+            e.preventDefault();
+            playSound('click');
+
+            const groupNameInput = document.getElementById('inputGroupName').value.trim();
+            const memberInputs = document.querySelectorAll('.member-input');
+            const membersList = [];
+
+            memberInputs.forEach(input => {
+                if (input.value.trim()) membersList.push(input.value.trim());
+            });
+
+            if (membersList.length < 2) {
+                alert('Mohon masukkan minimal 2 nama anggota kelompok!');
+                return;
+            }
+
+            gameState.groupName = groupNameInput;
+            gameState.members = membersList;
+
+            // Update Header Navigation UI
+            document.getElementById('navGroupName').innerText = `Kelompok: ${gameState.groupName}`;
+            document.getElementById('navMemberCount').innerText = `${gameState.members.length} Anggota`;
+            document.getElementById('navGroupBadge').classList.remove('hidden');
+            document.getElementById('navReportBtn').classList.remove('hidden');
+
+            // Switch to Level Select
+            document.getElementById('pageLogin').classList.add('hidden');
+            document.getElementById('pageLevelSelect').classList.remove('hidden');
+
+            renderLevelGrid();
+        }
+
+        function renderLevelGrid() {
+            const grid = document.getElementById('levelGrid');
+            grid.innerHTML = '';
+
+            let totalCompleted = 0;
+
+            levelsData.forEach(lvl => {
+                const prog = gameState.levelsProgress[lvl.id];
+                if (prog.completed) totalCompleted++;
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer`;
+                card.onclick = () => startLevel(lvl.id);
+
+                card.innerHTML = `
+                    <div>
+                        <div class="h-44 w-full bg-slate-900 relative overflow-hidden">
+                            ${landmarkSvgs[lvl.svgKey]}
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            
+                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-[11px] font-extrabold px-3 py-1 rounded-full shadow-sm">
+                                Level ${lvl.id}
+                            </span>
+
+                            <span class="absolute top-3 right-3 ${prog.completed ? 'bg-emerald-500' : 'bg-slate-700/80'} text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-solid ${prog.completed ? 'fa-circle-check' : 'fa-clock'}"></i>
+                                ${prog.completed ? 'Selesai' : 'Belum Selesai'}
+                            </span>
+
+                            <div class="absolute bottom-3 left-3 right-3 text-white">
+                                <h4 class="font-heading font-extrabold text-base leading-snug group-hover:text-amber-300 transition">
+                                    ${lvl.landmark}
+                                </h4>
+                            </div>
+                        </div>
+
+                        <div class="p-5">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-palu-teal block mb-1">
+                                ${lvl.title}
+                            </span>
+                            <p class="text-xs text-slate-500 font-medium line-clamp-2">
+                                ${lvl.hots.story}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="px-5 pb-5 pt-2 flex items-center justify-between border-t border-slate-100">
+                        <span class="text-xs font-semibold text-slate-500">
+                            <i class="fa-solid fa-puzzle-piece text-palu-teal mr-1"></i> Mode Puzzle + HOTS
+                        </span>
+                        <span class="text-xs font-bold text-palu-blue flex items-center gap-1 group-hover:translate-x-1 transition">
+                            Mulai <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('overallProgressText').innerText = `${totalCompleted} / 6`;
+            document.getElementById('overallStarsText').innerHTML = `${totalCompleted} / 6 <i class="fa-solid fa-circle-check text-sm text-emerald-500 ml-1"></i>`;
+        }
+
+        function goToLevelSelect() {
+            playSound('click');
+            document.getElementById('pageGameplay').classList.add('hidden');
+            document.getElementById('pageLevelSelect').classList.remove('hidden');
+            renderLevelGrid();
+        }
+
+        function startLevel(levelId) {
+            playSound('click');
+            gameState.currentLevelId = levelId;
+            const lvl = levelsData.find(l => l.id === levelId);
+
+            // Update Level Header UI
+            document.getElementById('gameLevelBadge').innerText = `Level ${lvl.id}`;
+            document.getElementById('puzzleLandmarkTitle').innerText = lvl.landmark;
+            document.getElementById('puzzleTopicSubtitle').innerText = lvl.title;
+
+            // Reset Card View to Front
+            document.getElementById('cardFlipper').classList.remove('rotate-y-180');
+            document.getElementById('gameStageIndicator').innerText = "Fase 1: Puzzle Kerja Sama";
+
+            // Setup Games
+            setupPuzzleBoard(lvl);
+            setupHotsStage(lvl);
+
+            // Show Page
+            document.getElementById('pageLevelSelect').classList.add('hidden');
+            document.getElementById('pageGameplay').classList.remove('hidden');
+        }
+
+        function setupPuzzleBoard(lvl) {
+            currentSlotAnswers = {};
+            selectedPieceId = null;
+            document.getElementById('finishPuzzleBtn').disabled = true;
+            document.getElementById('finishPuzzleBtn').className = "bg-slate-300 text-slate-500 cursor-not-allowed font-heading font-bold px-6 py-3 rounded-2xl transition duration-200 flex items-center gap-2 shadow-sm";
+            document.getElementById('puzzleInstructionText').innerText = "Petunjuk: Drag & drop atau Klik slot soal lalu klik potongan jawaban yang sesuai.";
+
+            const board = document.getElementById('puzzleBoard');
+            const tray = document.getElementById('piecesTray');
+
+            board.innerHTML = '';
+            tray.innerHTML = '';
+
+            lvl.puzzleSlots.forEach((slot) => {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = "bg-white/90 rounded-xl border-2 border-slate-200 p-2.5 flex flex-col justify-between items-center text-center relative transition shadow-sm hover:border-palu-teal cursor-pointer select-none";
+                slotDiv.dataset.slotId = slot.id;
+                
+                slotDiv.innerHTML = `
+                    <span class="text-[10px] font-extrabold uppercase text-slate-400">Soal #${slot.id + 1}</span>
+                    <span class="text-xs font-bold text-slate-800 my-auto px-1 leading-snug">${slot.question}</span>
+                    <div id="slotContent_${slot.id}" class="w-full py-1.5 px-2 bg-slate-100 rounded-lg text-xs font-extrabold text-slate-400 border border-dashed border-slate-300">
+                        [ Kosong ]
+                    </div>
+                `;
+
+                slotDiv.onclick = () => handleSlotClick(slot.id);
+                slotDiv.ondragover = (e) => e.preventDefault();
+                slotDiv.ondrop = (e) => handleDropOnSlot(e, slot.id);
+
+                board.appendChild(slotDiv);
+            });
+
+            const shuffledPieces = [...lvl.puzzleSlots].sort(() => Math.random() - 0.5);
+
+            shuffledPieces.forEach((piece) => {
+                const pieceDiv = document.createElement('div');
+                pieceDiv.id = `piece_${piece.id}`;
+                pieceDiv.draggable = true;
+                pieceDiv.className = "bg-gradient-to-r from-palu-teal to-teal-600 text-white font-heading font-bold text-xs sm:text-sm p-3 rounded-xl shadow-md hover:shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center text-center transition transform hover:-translate-y-0.5 select-none";
+                pieceDiv.innerText = piece.answer;
+                pieceDiv.dataset.pieceId = piece.id;
+
+                pieceDiv.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', piece.id);
+                    pieceDiv.classList.add('dragging');
+                };
+                pieceDiv.ondragend = () => pieceDiv.classList.remove('dragging');
+                pieceDiv.onclick = () => handlePieceClick(piece.id);
+
+                tray.appendChild(pieceDiv);
+            });
+
+            updateRemainingCount();
+        }
+
+        function handlePieceClick(pieceId) {
+            playSound('click');
+            const pieceDiv = document.getElementById(`piece_${pieceId}`);
+            if (selectedPieceId === pieceId) {
+                selectedPieceId = null;
+                pieceDiv.classList.remove('ring-4', 'ring-amber-400');
+            } else {
+                if (selectedPieceId !== null) {
+                    const prev = document.getElementById(`piece_${selectedPieceId}`);
+                    if (prev) prev.classList.remove('ring-4', 'ring-amber-400');
+                }
+                selectedPieceId = pieceId;
+                pieceDiv.classList.add('ring-4', 'ring-amber-400');
+            }
+        }
+
+        function handleSlotClick(slotId) {
+            if (selectedPieceId !== null) {
+                placePieceInSlot(selectedPieceId, slotId);
+                selectedPieceId = null;
+            }
+        }
+
+        function handleDropOnSlot(e, slotId) {
+            e.preventDefault();
+            const pieceId = parseInt(e.dataTransfer.getData('text/plain'));
+            if (!isNaN(pieceId)) {
+                placePieceInSlot(pieceId, slotId);
+            }
+        }
+
+        function placePieceInSlot(pieceId, slotId) {
+            if (pieceId === slotId) {
+                playSound('correct');
+                currentSlotAnswers[slotId] = pieceId;
+
+                const lvl = levelsData.find(l => l.id === gameState.currentLevelId);
+                const pieceObj = lvl.puzzleSlots.find(p => p.id === pieceId);
+
+                const slotContent = document.getElementById(`slotContent_${slotId}`);
+                slotContent.className = "w-full py-1.5 px-2 bg-emerald-500 text-white rounded-lg text-xs font-black border border-emerald-600 shadow-sm animate-bounce";
+                slotContent.innerText = pieceObj.answer;
+
+                const pieceDiv = document.getElementById(`piece_${pieceId}`);
+                if (pieceDiv) pieceDiv.remove();
+
+                updateRemainingCount();
+                checkPuzzleCompletion();
+            } else {
+                playSound('click');
+                alert('Potongan jawaban belum tepat untuk soal ini. Coba lagi!');
+            }
+        }
+
+        function updateRemainingCount() {
+            const count = 4 - Object.keys(currentSlotAnswers).length;
+            document.getElementById('remainingPiecesText').innerText = `${count} Tersisa`;
+        }
+
+        function checkPuzzleCompletion() {
+            if (Object.keys(currentSlotAnswers).length === 4) {
+                playSound('win');
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+
+                const board = document.getElementById('puzzleBoard');
+                const lvl = levelsData.find(l => l.id === gameState.currentLevelId);
+
+                board.innerHTML = `
+                    <div onclick="handlePuzzleSuccess()" class="absolute inset-0 z-20 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 scale-100 cursor-pointer hover:scale-[1.02] ring-4 ring-amber-400 ring-offset-2 animate-pulse flex items-center justify-center group">
+                        ${landmarkSvgs[lvl.svgKey]}
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition flex items-center justify-center">
+                            <span class="bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-black px-4 py-2 rounded-full shadow-2xl uppercase tracking-wider flex items-center gap-2 transform group-hover:scale-110 transition">
+                                <i class="fa-solid fa-hand-pointer animate-bounce"></i> KLIK GAMBAR UNTUK MEMBALIK
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('puzzleInstructionText').innerHTML = "<strong class='text-amber-600 font-bold'>Puzzle Lengkap! Klik pada gambar di atas untuk membalik kartu ke Soal HOTS.</strong>";
+
+                const btn = document.getElementById('finishPuzzleBtn');
+                btn.disabled = false;
+                btn.className = "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-heading font-bold px-6 py-3 rounded-2xl transition duration-200 flex items-center gap-2 shadow-lg shadow-amber-500/30 active:scale-95 animate-bounce";
+            }
+        }
+
+        function handlePuzzleSuccess() {
+            playSound('flip');
+            gameState.levelsProgress[gameState.currentLevelId].puzzleSolved = true;
+            
+            document.getElementById('cardFlipper').classList.add('rotate-y-180');
+            document.getElementById('gameStageIndicator').innerText = "Fase 2: Soal HOTS & LKPD";
+        }
+
+        function flipBackToPuzzle() {
+            playSound('flip');
+            document.getElementById('cardFlipper').classList.remove('rotate-y-180');
+            document.getElementById('gameStageIndicator').innerText = "Fase 1: Puzzle Kerja Sama";
+        }
+
+        function setupHotsStage(lvl) {
+            document.getElementById('hotsLandmarkSubtitle').innerText = lvl.landmark;
+            document.getElementById('hotsStoryText').innerText = lvl.hots.story;
+            document.getElementById('hotsLandmarkSvgPreview').innerHTML = landmarkSvgs[lvl.svgKey];
+        }
+
+        function markLevelCompleteAndReturn() {
+            playSound('win');
+            gameState.levelsProgress[gameState.currentLevelId].completed = true;
+            goToLevelSelect();
+        }
+
+        function showReportModal() {
+            playSound('click');
+            document.getElementById('reportGroupName').innerText = gameState.groupName || '-';
+            document.getElementById('reportGroupMembers').innerText = gameState.members.join(', ') || '-';
+
+            let completedCount = 0;
+            const detailsContainer = document.getElementById('reportLevelDetails');
+            detailsContainer.innerHTML = '';
+
+            levelsData.forEach(lvl => {
+                const prog = gameState.levelsProgress[lvl.id];
+                if (prog.completed) completedCount++;
+
+                const item = document.createElement('div');
+                item.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span class="font-extrabold text-xs text-slate-800">Level ${lvl.id}: ${lvl.landmark} (${lvl.title})</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${prog.completed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+                            ${prog.completed ? 'Sudah Didiskusikan' : 'Belum Dikerjakan'}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-700 font-medium">
+                        <strong>Soal HOTS:</strong> ${lvl.hots.story}
+                    </p>
+                `;
+                detailsContainer.appendChild(item);
+            });
+
+            document.getElementById('reportCompletedLevels').innerText = `${completedCount} / 6`;
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function hideReportModal() {
+            playSound('click');
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            console.log("Petualangan Matematika Rasio Kota Palu Siap Dimainkan!");
+        };
+    </script>
+</body>
+</html>
